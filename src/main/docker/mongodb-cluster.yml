@@ -1,0 +1,16 @@
+version: '2'
+services:
+    droner-mongodb:
+        image: mongo:3.4.8
+        ports:
+            - "27017:27017"
+        command: mongos --configdb droner-mongodb-config
+    droner-mongodb-node:
+        build:
+            context: .
+            dockerfile: mongodb/MongoDB.Dockerfile
+        command: mongod --replSet rs1 --noprealloc --smallfiles
+    droner-mongodb-config:
+        image: mongo:3.4.8
+        container_name: droner-mongodb-config
+        command: mongod --noprealloc --smallfiles --configsvr --dbpath /data/db
