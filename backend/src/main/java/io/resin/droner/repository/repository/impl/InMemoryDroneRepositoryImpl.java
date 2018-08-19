@@ -16,7 +16,7 @@ public class InMemoryDroneRepositoryImpl implements DroneRepository {
     private Set<Drone> data;
 
     @PostConstruct
-    protected void init() {
+    public void init() {
         this.data = new HashSet<>();
     }
 

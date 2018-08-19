@@ -4,8 +4,11 @@ package io.resin.droner.service;
 import io.resin.droner.DronerApplication;
 import io.resin.droner.entities.Coordinate;
 import io.resin.droner.entities.Drone;
+import io.resin.droner.entities.Status;
 import io.resin.droner.repository.repository.DroneRepository;
+import io.resin.droner.repository.repository.impl.InMemoryDroneRepositoryImpl;
 import io.resin.droner.service.impl.DroneServiceImpl;
+import io.resin.droner.util.TestConstants;
 import net.bytebuddy.pool.TypePool;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +24,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,7 +45,7 @@ public class DroneServiceTest {
     @InjectMocks
     private DroneServiceImpl service;
     @Mock
-    private DroneRepository repository;
+    private InMemoryDroneRepositoryImpl repository;
 
     @Before
     public void init() {
@@ -78,6 +84,70 @@ public class DroneServiceTest {
         verify(repository, times(1)).saveOrUpdate(drone);
         assertThat(drone.getCoordinates(), not(empty()));
         assertThat(drone.getCoordinates().size(), equalTo(1));
+    }
+
+    @Test
+    public void shouldReturnDroneInDeadStatus() {
+        //Arrange
+        Mockito.when(this.repository.saveOrUpdate(Mockito.any(Drone.class))).thenCallRealMethod();
+        Mockito.when(this.repository.all()).thenCallRealMethod();
+        Mockito.when(this.repository.fetch(Mockito.any(UUID.class))).thenCallRealMethod();
+        doCallRealMethod().when(this.repository).init();
+        this.repository.init();
+        Drone drone = this.service.registerDrone();
+        //Act
+        Collection<Drone> drones = this.service.listAll();
+        Drone fetchedDrone = this.service.fetch(drone.getId());
+        //Assert
+        assertThat(drones, hasItem(drone));
+        assertThat(fetchedDrone.getStatus(), equalTo(Status.DEAD));
+    }
+
+    @Test
+    public void shouldReturnDroneInMovingStatus() {
+        //Arrange
+        Mockito.when(this.repository.saveOrUpdate(Mockito.any(Drone.class))).thenCallRealMethod();
+        Mockito.when(this.repository.all()).thenCallRealMethod();
+        Mockito.when(this.repository.fetch(Mockito.any(UUID.class))).thenCallRealMethod();
+        doCallRealMethod().when(this.repository).init();
+        this.repository.init();
+        Drone drone = this.service.registerDrone();
+        //Act
+        this.service.updateCoordinates(drone.getId(),
+                Coordinate.builder()
+                        .latitude(TestConstants.SAMPLE_LATITUDE)
+                        .longitude(TestConstants.SAMPLE_LONGITUDE)
+                        .build());
+        Collection<Drone> drones = this.service.listAll();
+        Drone fetchedDrone = this.service.fetch(drone.getId());
+        //Assert
+        assertThat(drones, hasItem(drone));
+        assertThat(fetchedDrone.getStatus(), equalTo(Status.MOVING));
+    }
+
+    @Test
+    public void shouldReturnDroneInStuckStatus() {
+        //Arrange
+        Instant initialTime = Instant.now().minusSeconds(100); //100 seconds before now
+        Drone expected = Drone.builder()
+                .id(UUID.randomUUID())
+                .build();
+        for(int i=0; i<= 10; i++) {
+            initialTime = initialTime.plusSeconds(10);
+            expected.getCoordinates().add(
+                    Coordinate.builder()
+                            .latitude(TestConstants.SAMPLE_LATITUDE)
+                            .longitude(TestConstants.SAMPLE_LONGITUDE)
+                            .time(initialTime)
+                            .build());
+        }
+        Mockito.when(this.repository.fetch(Mockito.any(UUID.class))).thenReturn(Optional.of(expected));
+        doCallRealMethod().when(this.repository).init();
+        this.repository.init();
+        //Act
+        Drone fetchedDrone = this.service.fetch(expected.getId());
+        //Assert
+        assertThat(fetchedDrone.getStatus(), equalTo(Status.STUCK));
     }
 
 }

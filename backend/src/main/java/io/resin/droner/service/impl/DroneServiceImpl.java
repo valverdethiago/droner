@@ -2,22 +2,18 @@ package io.resin.droner.service.impl;
 
 import io.resin.droner.entities.Coordinate;
 import io.resin.droner.entities.Drone;
+import io.resin.droner.entities.Status;
 import io.resin.droner.repository.repository.DroneRepository;
 import io.resin.droner.service.CoordinateService;
 import io.resin.droner.service.DroneService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-//@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DroneServiceImpl implements DroneService {
 
     private static final int MINIMUM_INTERVAL = 10;
@@ -38,47 +34,107 @@ public class DroneServiceImpl implements DroneService {
         if (!drone.isPresent()) {
             throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
         }
-        coordinate.setTime(Instant.now());
-        drone.get().getCoordinates().add(coordinate);
+        // Cloning coordinate to avoid concurrency problems
+        Coordinate coordinateToSave = Coordinate.builder()
+                .latitude(coordinate.getLatitude())
+                .longitude(coordinate.getLongitude()).build();
+        coordinateToSave.setTime(Instant.now());
+        drone.get().getCoordinates().add(coordinateToSave);
         this.repository.saveOrUpdate(drone.get());
     }
 
     @Override
+    public Collection<Drone> listAll() {
+        Set<Drone> drones = this.repository.all();
+        drones.forEach(drone ->  fillStatus(drone));
+        return drones;
+    }
+
+    @Override
     public boolean isAlive(UUID id) {
+        if(id == null) {
+            throw new IllegalArgumentException("Drone Id must be informed to get status");
+        }
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
             throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
         }
+        return isAlive(drone.get());
+    }
+
+    @Override
+    public boolean isStuck(UUID id) {
+        if(id == null) {
+            throw new IllegalArgumentException("Drone Id must be informed to get status");
+        }
+        Optional<Drone> drone = this.repository.fetch(id);
+        if (!drone.isPresent()) {
+            throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
+        }
+        return isStuck(drone.get());
+    }
+
+    @Override
+    public boolean isAlive(Drone drone) {
         Instant now = Instant.now();
         //filter coordinates sent in the last 10 seconds
-        List<Coordinate> recentSentCoordinates = drone.get().getCoordinates()
+        List<Coordinate> recentSentCoordinates = drone.getCoordinates()
                 .stream()
-                .filter(coordinate ->
-                        coordinate.getTime().plusSeconds(MINIMUM_INTERVAL).isBefore(now))
+                .filter(coordinate -> {
+                    Long diffInSeconds = now.getEpochSecond() - coordinate.getTime().getEpochSecond();
+                    return diffInSeconds <= 10;
+                })
                 .collect(Collectors.toList());
         return !recentSentCoordinates.isEmpty();
     }
 
     @Override
-    public boolean isStuck(UUID id) {
+    public boolean isStuck(Drone drone) {
+        Instant now = Instant.now();
+        //filter coordinates sent in the last 10 seconds
+        List<Coordinate> recentSentCoordinates = drone.getCoordinates()
+                .stream()
+                .filter(coordinate -> {
+                    Long diffInSeconds = now.getEpochSecond() - coordinate.getTime().getEpochSecond();
+                    return diffInSeconds <= 10;
+                })
+                .collect(Collectors.toList());
+        if (recentSentCoordinates.size() == 0) {
+            return true;
+        }
+        //if drone has one single coordinate sent and it's recent it is not stuck
+        else if(recentSentCoordinates.size() == 1) {
+            return false;
+        }
+        else {
+            Collections.sort(recentSentCoordinates);
+            Coordinate first = recentSentCoordinates.get(0);
+            Coordinate last = recentSentCoordinates.get(recentSentCoordinates.size() - 1);
+            Double distance = this.coordinateService.calculateDistance(first, last);
+            return distance <= 1;
+        }
+    }
+
+    @Override
+    public Drone fetch(UUID id) {
+        if(id == null) {
+            throw new IllegalArgumentException("Drone Id must be informed to fetch");
+        }
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
             throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
         }
-        Instant now = Instant.now();
-        //filter coordinates sent in the last 10 seconds
-        List<Coordinate> recentSentCoordinates = drone.get().getCoordinates()
-                .stream()
-                .filter(coordinate ->
-                        coordinate.getTime().plusSeconds(MINIMUM_INTERVAL).isBefore(now))
-                .collect(Collectors.toList());
-        if (recentSentCoordinates.size() <= 1) {
-            return true;
+        this.fillStatus(drone.get());
+        return drone.get();
+    }
+
+    private void fillStatus(Drone drone) {
+        boolean isAlive = this.isAlive(drone);
+        if(!isAlive) {
+            drone.setStatus(Status.DEAD);
         }
-        Collections.sort(recentSentCoordinates);
-        Coordinate first = recentSentCoordinates.get(0);
-        Coordinate last = recentSentCoordinates.get(recentSentCoordinates.size() -1);
-        Double distance = this.coordinateService.calculateDistance(first, last);
-        return distance <= 1;
+        else {
+            drone.setStatus(this.isStuck(drone) ? Status.STUCK : Status.MOVING);
+        }
     }
 }

@@ -12,7 +12,10 @@ import java.util.UUID;
 @Builder
 @EqualsAndHashCode(of = "id")
 public class Drone implements Serializable {
+
     private UUID id;
+    private Status status;
+
     @Singular
     private final List<Coordinate> coordinates = new LinkedList<>();
 
