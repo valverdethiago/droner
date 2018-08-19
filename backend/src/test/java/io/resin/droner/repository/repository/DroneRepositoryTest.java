@@ -1,4 +1,4 @@
-package io.resin.droner.controller.repository;
+package io.resin.droner.repository.repository;
 
 
 import io.resin.droner.DronerApplication;

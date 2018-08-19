@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public class DroneRepositoryImpl implements DroneRepository {
+public class InMemoryDroneRepositoryImpl implements DroneRepository {
 
     private Set<Drone> data;
 
