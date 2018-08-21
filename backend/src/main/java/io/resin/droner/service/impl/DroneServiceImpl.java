@@ -6,6 +6,7 @@ import io.resin.droner.entities.Status;
 import io.resin.droner.repository.repository.DroneRepository;
 import io.resin.droner.service.CoordinateService;
 import io.resin.droner.service.DroneService;
+import io.resin.droner.service.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +16,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class DroneServiceImpl implements DroneService {
-
-    private static final int MINIMUM_INTERVAL = 10;
 
     @Autowired
     private DroneRepository repository;
@@ -29,10 +28,10 @@ public class DroneServiceImpl implements DroneService {
     }
 
     @Override
-    public void updateCoordinates(UUID id, Coordinate coordinate) {
+    public void updateCoordinates(UUID id, Coordinate coordinate) throws EntityNotFoundException{
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
-            throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
+            throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
         // Cloning coordinate to avoid concurrency problems
         Coordinate coordinateToSave = Coordinate.builder()
@@ -51,25 +50,25 @@ public class DroneServiceImpl implements DroneService {
     }
 
     @Override
-    public boolean isAlive(UUID id) {
+    public boolean isAlive(UUID id) throws EntityNotFoundException{
         if(id == null) {
             throw new IllegalArgumentException("Drone Id must be informed to get status");
         }
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
-            throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
+            throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
         return isAlive(drone.get());
     }
 
     @Override
-    public boolean isStuck(UUID id) {
+    public boolean isStuck(UUID id) throws EntityNotFoundException{
         if(id == null) {
             throw new IllegalArgumentException("Drone Id must be informed to get status");
         }
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
-            throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
+            throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
         return isStuck(drone.get());
     }
@@ -116,13 +115,13 @@ public class DroneServiceImpl implements DroneService {
     }
 
     @Override
-    public Drone fetch(UUID id) {
+    public Drone fetch(UUID id) throws EntityNotFoundException {
         if(id == null) {
             throw new IllegalArgumentException("Drone Id must be informed to fetch");
         }
         Optional<Drone> drone = this.repository.fetch(id);
         if (!drone.isPresent()) {
-            throw new IllegalArgumentException(String.format("Drone with id %s not found", id));
+            throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
         this.fillStatus(drone.get());
         return drone.get();

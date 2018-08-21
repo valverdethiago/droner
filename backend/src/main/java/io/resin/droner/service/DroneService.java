@@ -4,7 +4,6 @@ import io.resin.droner.entities.Coordinate;
 import io.resin.droner.entities.Drone;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 public interface DroneService {
@@ -13,17 +12,17 @@ public interface DroneService {
 
     Collection<Drone> listAll();
 
-    void updateCoordinates(UUID id, Coordinate coordinate);
+    void updateCoordinates(UUID id, Coordinate coordinate) throws EntityNotFoundException;
 
-    boolean isAlive(UUID id);
+    boolean isAlive(UUID id) throws EntityNotFoundException;
 
-    boolean isStuck(UUID id);
+    boolean isStuck(UUID id) throws EntityNotFoundException;
 
     boolean isAlive(Drone drone);
 
     boolean isStuck(Drone drone);
 
-    Drone fetch(UUID id);
+    Drone fetch(UUID id) throws EntityNotFoundException;
 
 
 }
