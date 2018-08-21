@@ -63,7 +63,7 @@ public class DroneServiceTest {
     }
 
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = EntityNotFoundException.class)
     public void shouldThrowAnExceptionWhenUpdatingInvalidDrone() {
         // Arrange
         when(repository.fetch(Mockito.any(UUID.class))).thenReturn(Optional.empty());
