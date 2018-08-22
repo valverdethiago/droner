@@ -1,0 +1,19 @@
+
+
+<button id="refresh" (click)="refresh()" >Refresh</button>
+<table id="drones">
+  <tr>
+    <th>ID</th>
+    <th>Last Updated Time</th>
+    <th>Last Coordinate</th>
+    <th>Status</th>
+  </tr>
+  <tbody>
+    <tr *ngFor="let drone of entities" [ngClass]="drone.status">
+      <td>{{drone.id}}</td>
+      <td> - </td>
+      <td> - </td>
+      <td>{{drone.status}}</td>
+    </tr>
+  </tbody>
+</table>
