@@ -8,7 +8,7 @@
     <th>Last Coordinate</th>
     <th>Status</th>
   </tr>
-  <tbody>
+  <tbody *ngIf="entities?.length > 0; else elseBlock">
     <tr *ngFor="let drone of entities" [ngClass]="drone.status">
       <td>{{drone.id}}</td>
       <td> - </td>
@@ -16,4 +16,11 @@
       <td>{{drone.status}}</td>
     </tr>
   </tbody>
+  <ng-template #elseBlock>
+    <tbody>
+      <tr>
+        <td colspan="4"> There's no drones being monitored yet.</td>
+      </tr>
+    </tbody>
+  </ng-template>
 </table>

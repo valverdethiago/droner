@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Drone } from '../entities/drone';
 import { Coordinate } from '../entities/coordinate';
-import { DRONES } from './mock-drones';
+import { DroneService } from '../services/drone.service';
 
 @Component({
   selector: 'app-drone-list',
@@ -12,15 +12,15 @@ export class DroneListComponent implements OnInit {
 
   entities : Drone[];
 
-  constructor() { }
+  constructor(private droneService : DroneService) { }
 
   ngOnInit() {
     this.refresh();
   }
 
-  refresh() {
-    console.log('Refreshing');
-    this.entities = DRONES;
+  refresh() : void {
+    this.droneService.searchDrones()
+        .subscribe(entities => this.entities = entities);
   }
 
 }
