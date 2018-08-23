@@ -6,17 +6,27 @@ import org.springframework.stereotype.Service;
 
 import static java.lang.Math.*;
 
+/**
+ * Basic implementaion of all buisness rules related to coordinate
+ */
 @Service
 public class CoordinateServiceImpl implements CoordinateService {
     private static final int EARTH_RADIUS = 6378137;
     static double PI_RAD = Math.PI / 180.0;
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Double calculateDistance(Coordinate start, Coordinate end) {
         return this.greatCircleInKilometers(start.getLatitude(), start.getLongitude(),
                 end.getLatitude(), end.getLongitude()) * 1000;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Coordinate moveVertically(Coordinate coordinate, Double distanceInMeters) {
         if (coordinate == null ||

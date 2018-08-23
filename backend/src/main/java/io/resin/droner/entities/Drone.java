@@ -7,6 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Map class that represents the drones, with their unique identifiable id, status and coordinates
+ */
 @Data
 @AllArgsConstructor
 @Builder
