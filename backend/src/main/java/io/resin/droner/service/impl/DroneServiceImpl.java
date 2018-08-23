@@ -45,7 +45,7 @@ public class DroneServiceImpl implements DroneService {
     @Override
     public Collection<Drone> listAll() {
         Set<Drone> drones = this.repository.all();
-        drones.forEach(drone ->  fillStatus(drone));
+        drones.forEach(drone ->  fillStatusAndLastCoordinate(drone));
         return drones;
     }
 
@@ -123,17 +123,21 @@ public class DroneServiceImpl implements DroneService {
         if (!drone.isPresent()) {
             throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
-        this.fillStatus(drone.get());
+        this.fillStatusAndLastCoordinate(drone.get());
         return drone.get();
     }
 
-    private void fillStatus(Drone drone) {
+    private void fillStatusAndLastCoordinate(Drone drone) {
         boolean isAlive = this.isAlive(drone);
         if(!isAlive) {
             drone.setStatus(Status.DEAD);
         }
         else {
             drone.setStatus(this.isStuck(drone) ? Status.STUCK : Status.MOVING);
+        }
+        if(!drone.getCoordinates().isEmpty()) {
+            Collections.sort(drone.getCoordinates());
+            drone.setLastCoordinate(drone.getCoordinates().stream().reduce((first, second) -> second).get());
         }
     }
 }
