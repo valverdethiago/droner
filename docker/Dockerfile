@@ -1,11 +1,29 @@
-FROM andreptb/oracle-java:8
+FROM ubuntu:16.04
 
-ENV MAVEN_VERSION 3.3.9
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  git \
+  openjdk-8-jdk \
+  maven \
+  curl
 
-RUN curl -fsSL http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | tar xzf - -C /usr/share \
-  && mv /usr/share/apache-maven-$MAVEN_VERSION /usr/share/maven \
-  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+  && apt-get install -y nodejs
 
-ENV MAVEN_HOME /usr/share/maven
+RUN git clone https://github.com/valverdethiago/droner.git /app 
 
-CMD ["mvn"]
+ADD startup.sh /app
+
+RUN chmod 777 /app/startup.sh
+
+RUN mvn clean install -f /app/backend/pom.xml 
+
+RUN npm --prefix /app/frontend install /app/frontend 
+
+EXPOSE 4200
+
+EXPOSE 8080
+
+#ENTRYPOINT app/startup.sh 
+
+
