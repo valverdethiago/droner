@@ -8,7 +8,7 @@ This repository has four main folders:
  3. docker - Docker file
  4. simulation
  
- ##Run
+ ## Run
  
  ### Docker
  1. clone this repo using
@@ -29,20 +29,20 @@ PS.: You can switch to another port that better fits your needs
 ### Build
 For debug the application locally or even edit or add more features you may want to use your favorite IDE. 
 1. Backend
-    i. Build
+    1. Build
     ```bash
     mvn clean install
     ```
-    ii. Run
+    2. Run
     ```bash
     mvn spring-boot:run
     ```
  2. Frontend
-    i. Install    
+    1. Install    
     ```bash
     npm install
     ```
-    ii. Run    
+    2. Run    
     ```bash
     npm start
     ```
