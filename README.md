@@ -26,6 +26,25 @@ docker run -p 8080:8080 droner
 ```
 PS.: You can switch to another port that better fits your needs
 
-#Build
-
+### Build
+For debug the application locally or even edit or add more features you may want to use your favorite IDE. 
+1. Backend
+    i. Build
+    ```bash
+    mvn clean install
+    ```
+    ii. Run
+    ```bash
+    mvn spring-boot:run
+    ```
+ 2. Frontend
+    i. Install    
+    ```bash
+    npm install
+    ```
+    ii. Run    
+    ```bash
+    npm start
+    ```
+    The application will start on localhost:4200
 
