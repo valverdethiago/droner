@@ -19,7 +19,7 @@ import java.util.UUID;
  * @author Thiago Valverde de Souza
  */
 @RestController
-@RequestMapping(path = "/drone")
+@RequestMapping(path = "/api/drone")
 public class RestDroneControllerImpl implements DroneController {
 
     /**

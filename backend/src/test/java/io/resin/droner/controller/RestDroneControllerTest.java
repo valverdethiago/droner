@@ -64,7 +64,7 @@ public class RestDroneControllerTest {
         //Arrange
         when(this.droneService.registerDrone()).thenReturn(MockHelper.mockDrone());
         //Act
-        mockMvc.perform(put("/drone").contentType(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(put("/api/drone").contentType(MediaType.APPLICATION_JSON_VALUE))
                 //Assert
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(contentType))
@@ -75,7 +75,7 @@ public class RestDroneControllerTest {
     public void shouldUpdateCoordinates() throws Exception {
         //Arrange
         UUID id = UUID.randomUUID();
-        String url = String.format("/drone/update/%s", id.toString());
+        String url = String.format("/api/drone/update/%s", id.toString());
         Coordinate coordinate = MockHelper.mockCoordinate();
         //Act
         mockMvc.perform(post(url)
@@ -89,7 +89,7 @@ public class RestDroneControllerTest {
     public void shouldReturnErrorWhenUpdatingInvalidDrone() throws Exception {
         //Arrange
         UUID id = UUID.randomUUID();
-        String url = String.format("/drone/update/%s", id.toString());
+        String url = String.format("/api/drone/update/%s", id.toString());
         Coordinate coordinate = MockHelper.mockCoordinate();
         String json = JsonHelper.convertObjectToJsonString(coordinate);
         doThrow(EntityNotFoundException.class)
@@ -109,7 +109,7 @@ public class RestDroneControllerTest {
         Coordinate coordinate = MockHelper.mockCoordinate();
         String json = JsonHelper.convertObjectToJsonString(coordinate);
         //Act
-        mockMvc.perform(post("/drone/update/")
+        mockMvc.perform(post("/api/drone/update/")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(json))
                 //Assert
@@ -123,7 +123,7 @@ public class RestDroneControllerTest {
         List<Drone> expectedDroneList = MockHelper.mockDroneList(expectedListSize);
         when(this.droneService.listAll()).thenReturn(expectedDroneList);
         //Act
-        mockMvc.perform(get("/drone/all"))
+        mockMvc.perform(get("/api/drone/all"))
                 //Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(expectedListSize)));
@@ -134,7 +134,7 @@ public class RestDroneControllerTest {
         //Arrange
         when(this.droneService.listAll()).thenReturn(Collections.emptyList());
         //Act
-        mockMvc.perform(get("/drone/all"))
+        mockMvc.perform(get("/api/drone/all"))
                 //Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
