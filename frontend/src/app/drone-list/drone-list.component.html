@@ -1,0 +1,22 @@
+
+
+<button id="refresh" (click)="refresh()" >Refresh</button>
+<table id="drones">
+  <tr>
+    <th>ID</th>
+    <th>Status</th>
+  </tr>
+  <tbody *ngIf="entities?.length > 0; else elseBlock">
+    <tr *ngFor="let drone of entities" [ngClass]="drone.status">
+      <td>{{drone.id}}</td>
+      <td>{{drone.status}}</td>
+    </tr>
+  </tbody>
+  <ng-template #elseBlock>
+    <tbody>
+      <tr>
+        <td colspan="4"> There's no drones being monitored yet.</td>
+      </tr>
+    </tbody>
+  </ng-template>
+</table>
