@@ -14,6 +14,9 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Basic implementation of all business rules related to drone
+ */
 @Service
 public class DroneServiceImpl implements DroneService {
 
@@ -22,11 +25,17 @@ public class DroneServiceImpl implements DroneService {
     @Autowired
     private CoordinateService coordinateService;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Drone registerDrone() {
         return repository.saveOrUpdate(Drone.builder().build());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateCoordinates(UUID id, Coordinate coordinate) throws EntityNotFoundException{
         Optional<Drone> drone = this.repository.fetch(id);
@@ -42,13 +51,19 @@ public class DroneServiceImpl implements DroneService {
         this.repository.saveOrUpdate(drone.get());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Collection<Drone> listAll() {
         Set<Drone> drones = this.repository.all();
-        drones.forEach(drone ->  fillStatus(drone));
+        drones.forEach(drone ->  fillStatusAndLastCoordinate(drone));
         return drones;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAlive(UUID id) throws EntityNotFoundException{
         if(id == null) {
@@ -61,6 +76,9 @@ public class DroneServiceImpl implements DroneService {
         return isAlive(drone.get());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isStuck(UUID id) throws EntityNotFoundException{
         if(id == null) {
@@ -73,6 +91,9 @@ public class DroneServiceImpl implements DroneService {
         return isStuck(drone.get());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAlive(Drone drone) {
         Instant now = Instant.now();
@@ -87,6 +108,9 @@ public class DroneServiceImpl implements DroneService {
         return !recentSentCoordinates.isEmpty();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isStuck(Drone drone) {
         Instant now = Instant.now();
@@ -114,6 +138,9 @@ public class DroneServiceImpl implements DroneService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Drone fetch(UUID id) throws EntityNotFoundException {
         if(id == null) {
@@ -123,17 +150,25 @@ public class DroneServiceImpl implements DroneService {
         if (!drone.isPresent()) {
             throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
-        this.fillStatus(drone.get());
+        this.fillStatusAndLastCoordinate(drone.get());
         return drone.get();
     }
 
-    private void fillStatus(Drone drone) {
+    /**
+     * Iterate over coordinate, if any, to evaluate the current status of the Drone
+     * @param drone
+     */
+    private void fillStatusAndLastCoordinate(Drone drone) {
         boolean isAlive = this.isAlive(drone);
         if(!isAlive) {
             drone.setStatus(Status.DEAD);
         }
         else {
             drone.setStatus(this.isStuck(drone) ? Status.STUCK : Status.MOVING);
+        }
+        if(!drone.getCoordinates().isEmpty()) {
+            Collections.sort(drone.getCoordinates());
+            drone.setLastCoordinate(drone.getCoordinates().stream().reduce((first, second) -> second).get());
         }
     }
 }

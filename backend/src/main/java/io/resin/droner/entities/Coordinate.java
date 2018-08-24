@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.Instant;
 
+/**
+ * Model class that maps coordinates of drones.
+ * It implements comparable interface because we order coordinate collections by the time they were uploaded.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +23,7 @@ public class Coordinate implements Serializable, Comparable<Coordinate> {
 
     @Override
     public int compareTo(Coordinate another) {
-        if(this == another || (this.getTime() == null && another.getTime() == null)) {
+        if (this == another || (this.getTime() == null && another.getTime() == null)) {
             return 0;
         }
         return this.getTime().compareTo(another.getTime());
