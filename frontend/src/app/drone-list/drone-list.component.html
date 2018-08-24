@@ -4,15 +4,11 @@
 <table id="drones">
   <tr>
     <th>ID</th>
-    <th>Last Updated Time</th>
-    <th>Last Coordinate</th>
     <th>Status</th>
   </tr>
   <tbody *ngIf="entities?.length > 0; else elseBlock">
     <tr *ngFor="let drone of entities" [ngClass]="drone.status">
       <td>{{drone.id}}</td>
-      <td> - </td>
-      <td> - </td>
       <td>{{drone.status}}</td>
     </tr>
   </tbody>
