@@ -10,6 +10,7 @@ import io.resin.droner.service.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class DroneServiceImpl implements DroneService {
     @Override
     public Collection<Drone> listAll() {
         Set<Drone> drones = this.repository.all();
-        drones.forEach(drone ->  fillStatusAndLastCoordinate(drone));
+        drones.forEach(drone ->  fillCalculatedProperties(drone));
         return drones;
     }
 
@@ -150,7 +151,7 @@ public class DroneServiceImpl implements DroneService {
         if (!drone.isPresent()) {
             throw new EntityNotFoundException(String.format("Drone with id %s not found", id));
         }
-        this.fillStatusAndLastCoordinate(drone.get());
+        this.fillCalculatedProperties(drone.get());
         return drone.get();
     }
 
@@ -158,7 +159,7 @@ public class DroneServiceImpl implements DroneService {
      * Iterate over coordinate, if any, to evaluate the current status of the Drone
      * @param drone
      */
-    private void fillStatusAndLastCoordinate(Drone drone) {
+    private void fillCalculatedProperties(Drone drone) {
         boolean isAlive = this.isAlive(drone);
         if(!isAlive) {
             drone.setStatus(Status.DEAD);
@@ -169,6 +170,24 @@ public class DroneServiceImpl implements DroneService {
         if(!drone.getCoordinates().isEmpty()) {
             Collections.sort(drone.getCoordinates());
             drone.setLastCoordinate(drone.getCoordinates().stream().reduce((first, second) -> second).get());
+            this.calculateVelocity(drone);
         }
+    }
+
+    /**
+     * Iterate over coordinates, if any, to evaluate the current velocity of the drone
+     * @param drone
+     */
+    private void calculateVelocity(Drone drone) {
+        if(drone.getCoordinates().size() < 2) {
+            return;
+        }
+        Coordinate point1 = drone.getCoordinates().get(drone.getCoordinates().size() -2);
+        Coordinate point2 = drone.getCoordinates().get(drone.getCoordinates().size() -1);
+        Double distanceInMeters = this.coordinateService.calculateDistance(point1, point2);
+        Long timeDifferenceInSeconds = point2.getTime().getEpochSecond() - point1.getTime().getEpochSecond();
+        BigDecimal velocity = new BigDecimal(distanceInMeters).setScale(2, BigDecimal.ROUND_HALF_UP);
+        velocity.divide(new BigDecimal((timeDifferenceInSeconds)));
+        drone.setVelocity(velocity.doubleValue());
     }
 }

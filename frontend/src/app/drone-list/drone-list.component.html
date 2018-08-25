@@ -3,12 +3,14 @@
 <button id="refresh" (click)="refresh()" >Refresh</button>
 <table id="drones">
   <tr>
-    <th>ID</th>
-    <th>Status</th>
+    <th class="id-column">ID</th>
+    <th class="velocity-column">Velocity (meters/second)</th>
+    <th class="status-column">Status</th>
   </tr>
   <tbody *ngIf="entities?.length > 0; else elseBlock">
     <tr *ngFor="let drone of entities" [ngClass]="drone.status">
       <td>{{drone.id}}</td>
+      <td>{{drone.velocity}}</td>
       <td>{{drone.status}}</td>
     </tr>
   </tbody>
