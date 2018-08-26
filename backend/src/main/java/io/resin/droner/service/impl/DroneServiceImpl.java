@@ -187,7 +187,6 @@ public class DroneServiceImpl implements DroneService {
         Double distanceInMeters = this.coordinateService.calculateDistance(point1, point2);
         Long timeDifferenceInSeconds = point2.getTime().getEpochSecond() - point1.getTime().getEpochSecond();
         BigDecimal velocity = new BigDecimal(distanceInMeters).setScale(2, BigDecimal.ROUND_HALF_UP);
-        velocity.divide(new BigDecimal((timeDifferenceInSeconds)));
-        drone.setVelocity(velocity.doubleValue());
+        drone.setVelocity(velocity.divide(new BigDecimal((timeDifferenceInSeconds))).doubleValue());
     }
 }

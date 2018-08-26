@@ -5,11 +5,8 @@ import io.resin.droner.DronerApplication;
 import io.resin.droner.entities.Coordinate;
 import io.resin.droner.entities.Drone;
 import io.resin.droner.entities.Status;
-import io.resin.droner.repository.repository.DroneRepository;
 import io.resin.droner.repository.repository.impl.InMemoryDroneRepositoryImpl;
 import io.resin.droner.service.impl.DroneServiceImpl;
-import io.resin.droner.util.TestConstants;
-import net.bytebuddy.pool.TypePool;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,23 +14,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
 import static io.resin.droner.util.TestConstants.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -167,8 +160,9 @@ public class DroneServiceTest {
                 .longitude(SAMPLE_LONGITUDE)
                 .time(initialTime)
                 .build();
+
         for(int i=0; i<= 10; i++) {
-            initialTime = initialTime.plusSeconds(10);
+            initialTime = initialTime.plusSeconds(DEFAULT_TIME_DIFFERENCE);
             expected.getCoordinates().add(currentCoordinate);
             currentCoordinate = this.coordinateService
                 .moveVertically(currentCoordinate, EXPECTED_DISTANCE);
@@ -180,8 +174,8 @@ public class DroneServiceTest {
         //Act
         Drone fetchedDrone = this.service.fetch(expected.getId());
         //Assert
-        Double minExpectedVelocity = EXPECTED_DISTANCE - EXPECTED_DISTANCE * ERROR_MARGIN;
-        Double maxExpectedVelocity = EXPECTED_DISTANCE + EXPECTED_DISTANCE * ERROR_MARGIN;
+        Double minExpectedVelocity = EXPECTED_VELOCITY - EXPECTED_VELOCITY * ERROR_MARGIN;
+        Double maxExpectedVelocity = EXPECTED_VELOCITY + EXPECTED_VELOCITY * ERROR_MARGIN;
         assertThat(fetchedDrone.getStatus(), equalTo(Status.MOVING));
         assertThat(fetchedDrone.getVelocity(),
             is (both(greaterThanOrEqualTo(minExpectedVelocity)).and(lessThanOrEqualTo(maxExpectedVelocity))));
