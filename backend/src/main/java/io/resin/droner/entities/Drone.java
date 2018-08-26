@@ -19,6 +19,7 @@ public class Drone implements Serializable {
     private UUID id;
     private Status status;
     private Coordinate lastCoordinate;
+    private Double velocity;
 
     @Singular
     private final List<Coordinate> coordinates = new LinkedList<>();

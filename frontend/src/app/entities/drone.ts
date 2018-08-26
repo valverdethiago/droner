@@ -1,5 +1,9 @@
+import { Coordinate } from "./coordinate";
+
 export class Drone {
     id : String;
     status : String;
-    coordinates : any[];
+    coordinates : Coordinate[];
+    lastCoordinate : Coordinate;
+    velocity : number;
 }

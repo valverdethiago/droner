@@ -60,3 +60,16 @@
 .DEAD {
     color: red;
 }
+
+.id-column {
+    width: 40%;
+}
+
+.velocity-column{
+    width: 30%;
+
+}
+
+.status-column {
+    width: 30%;
+}

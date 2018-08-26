@@ -70,5 +70,4 @@ public interface DroneService {
      */
     Drone fetch(UUID id) throws EntityNotFoundException;
 
-
 }
